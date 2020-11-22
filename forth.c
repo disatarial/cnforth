@@ -13,56 +13,56 @@ int check_blank(char c)
 char *parse_word()
 {
     char *now;
-    while (check_blank(*text_p)) //跳过字符串头部的空白字符后返回指针
+    while (check_blank(*text_p)) //Вернуть указатель после пропуска пустых символов в начале строки
         text_p++;
     
     now = text_p;
     
-    while ( !check_blank(*text_p)  && (*text_p)!='\0') //跳过字符串中第一个词
+    while ( !check_blank(*text_p)  && (*text_p)!='\0') //Пропустить первое слово в строке
         text_p++;
     
     if(*text_p == '\0') 
         return now;
-    *text_p = '\0';   //将字符串中第一个词后的空格变为'\0'
+    *text_p = '\0';   //Измените пробел после первого слова в строке на «\ 0»
     text_p++;
     
     return now;
 }
 
-
-Word *create(char *name, fn_p  fp)
+// создание словарной статьи
+Word *create(char *name, fn_p  fp)  
 {
-    Word *w=(Word*)malloc(sizeof(Word));
-    w->code_p=fp;
+    Word *w=(Word*)malloc(sizeof(Word)); // выделение места для адреса слова
+    w->code_p=fp; // добавление
     
-    w->name=(char*)malloc(strlen(name) + 1);
-    strcpy(w->name,name);
+    w->name=(char*)malloc(strlen(name) + 1); // выделение места для имени
+    strcpy(w->name,name); // копироване 
     
     w->wplist=NULL;   
 
-    w->flag = HIDE_WORD;
+    w->flag = HIDE_WORD;  // ? скрытое слово? l для  создания нового слова? чтоб оно не появлялось в словаре?
 
     return w;
 }
 
-
+// создание выполняемой части слова
 void does(Word *w, Word **list, int n)
 {
     if(n != 0) {
-        w->wplist = (Word**)malloc(n);
-        memcpy(w->wplist,list, n);
+        w->wplist = (Word**)malloc(n); // выделяем память под выполняему часть слова
+        memcpy(w->wplist,list, n); // копируем 
     } else {
-        w->wplist = list;
+        w->wplist = list; 
     }
-    w->flag = REVEAL_WORD;
+    w->flag = REVEAL_WORD; // разрешаем поиск слова в словаре
 }
 
+// ?связь нового синного слова со словарем? 
 
-Word *def_core(char *name, fn_p  fp)
+Word *def_core(char *name, fn_p  fp) 
 {
     Word *w=create(name, fp);
     w->flag = REVEAL_WORD;
-
     return w;
 }
 
@@ -72,7 +72,7 @@ void colon_code()
     RP++;
     *RP=(CELL)IP;
     IP=(*IP)->wplist-1;
-    PRINT("[DEBUG]进入子例程\n")
+    PRINT("[DEBUG] go_to_function \n") // 进入子例程 Войдите в подпрограмму
 }
 
 
@@ -87,29 +87,29 @@ void var_code()
     ds_push((CELL)*IP);
 }
 
-
+// инициализация словаря
 Dict *dict_init()
 {
-    Dict *dict=(Dict*)malloc(sizeof(Dict));
-    dict->size = 0;
-    dict->head = NULL;
+    Dict *dict=(Dict*)malloc(sizeof(Dict)); // выделение памяти под словарь
+    dict->size = 0; // обнуление размера
+    dict->head = NULL; // обнуление заголовка
     return dict;
 }
 
-
+// связываение словаря и   слова  (сишного) .
 int dict_ins_next(Dict *dict, Word *word)
 {
-    word->link = dict->head;
+    word->link = dict->head; 
     dict->head = word;
     dict->size++;
     return 0;
 }
 
-
+// поиск в словаре . как наблюдаю  отсутствует список словарей и есть только 1 словарь!!! 
 Word *dict_search_name(Dict *dict, char *name)
 {
     Word *w = dict->head;
-    //为了支持递归忽略隐藏词
+    //为了支持递归忽略隐藏词 Игнорировать скрытые слова для поддержки рекурсии
     while ((w != NULL && strcmp(w->name,name))
         || (w != NULL && !strcmp(w->name,name) && w->flag == HIDE_WORD))
     {  
@@ -119,7 +119,7 @@ Word *dict_search_name(Dict *dict, char *name)
     return w;
 }
 
-
+// ? похоже на удаление слова  из словаря?
 void dict_destroy_word(Word *word)
 {
     free(word->name);
@@ -127,7 +127,7 @@ void dict_destroy_word(Word *word)
     free(word);
 }
 
-
+// удаление слова в словаре и всех последующих
 int dict_rem_after(Dict *dict, char *name)
 {
     Word *w = dict_search_name(dict, name);
@@ -158,7 +158,7 @@ int dict_rem_after(Dict *dict, char *name)
     return 0;
 }
 
-
+// ?режим интерпретации? или это команда на интерпретацию?
 void explain()
 {
     Word  **IP_end = IP;
@@ -166,7 +166,7 @@ void explain()
     
     while(IP != IP_end)
     {
-        PRINT("[DEBUG]解释执行> %s\n", (*IP)->name)
+        PRINT("[DEBUG]interpret> %s\n", (*IP)->name) // Интерпретация>
         
         (*IP)->code_p();
         ++IP;
@@ -174,7 +174,7 @@ void explain()
     IP_head = IP;
 }
 
-
+// проверка на цифру
 int is_num(char *s)
 {
     if(*s == '-')
@@ -189,34 +189,34 @@ int is_num(char *s)
     return 1;
 }
 
-
+// поиск в словаре
 int find(Dict *dict, char *name)
 {
     Word *word_p;
-    word_p = dict_search_name(dict, name);
+    word_p = dict_search_name(dict, name); // попытка поиска
     
-    if(!strcmp(":", name) || !strcmp("]", name)) state = COMPILE;
+    if(!strcmp(":", name) || !strcmp("]", name)) state = COMPILE; // переключится в режим компиляции если есть команда  : или ]
     
     if(state == COMPILE)
     {
-        if(word_p==NULL)    //词典链表搜索不到名字后，去判断是不是数字
+        if(word_p==NULL)    //Словарь связанный список не может найти имя, чтобы определить, является ли это числом
         {
             if (!is_num(name))    
             {
-                return 0;    //如果不是数字，返回0
+                return 0;    //如果不是数字，返回0   Возвращает 0, если это не число
             }
             else 
-            {               //如果是数字
-                PRINT("[DEBUG]成功找到数字%s\n",name)
-                ip_push(dict_search_name(dict, "(lit)"), IP_head);   //将push核心词指针存入IP数组        
-                ip_push((Word*)(CELL)(atoi(name)), IP_head);    //将CELL型数强制转换为Word指针类型
+            {               //如果是数字 Если это число
+                PRINT("[DEBUG] number_ok %s\n",name) //Успешно найти номер%
+                ip_push(dict_search_name(dict, "(lit)"), IP_head);   //Поместите указатель основного слова push в массив IP     
+                ip_push((Word*)(CELL)(atoi(name)), IP_head);    //Приведение числа типа CELL к типу указателя Word
 
                 return 1;
             }            
         }
-        else if(word_p->flag == IMMD_WORD)  //立即词
+        else if(word_p->flag == IMMD_WORD)  //Немедленное слово
         {
-            PRINT("[DEBUG]执行立即词 %s\n", name)
+            PRINT("[DEBUG] immediate_run %s\n", name) // Выполнение немедленного слова
             if(word_p->wplist != NULL)
             {
                 in_interpret();
@@ -231,21 +231,21 @@ int find(Dict *dict, char *name)
         }
         else
         {
-            PRINT("[DEBUG]成功编译%s词\n",name)
+            PRINT("[DEBUG]word_%s_ok\n",name) // Слова%s успешно скомпилированы
             ip_push(word_p, IP_head);
         }
     }
     else if(state == EXPLAIN)
     {
-        if(word_p==NULL)    //词典链表搜索不到名字后，去判断是不是数字
+        if(word_p==NULL)    //Словарь связанный список не может найти имя, чтобы определить, является ли это числом
         {
             if (!is_num(name))    
             {
-                return 0;    //如果不是数字，返回0
+                return 0;    //Возвращает 0, если это не число
             }
             else 
-            {               //如果是数字
-                PRINT("[DEBUG]数据栈压入 %s\n",name)
+            {               //Если это число
+                PRINT("[DEBUG]number ok%s\n",name)
                 ds_push((CELL)(atoi(name)));
 
                 return 1;
@@ -253,7 +253,7 @@ int find(Dict *dict, char *name)
         }
         else
         {
-            PRINT("[DEBUG]成功找到%s词\n",name)
+            PRINT("[DEBUG]word ok\n",name)
             ip_push(word_p, IP_head);
             explain();
         }
@@ -262,14 +262,14 @@ int find(Dict *dict, char *name)
     return 1;
 }
 
-
+// ? очистка стека?
 void empty_stack()
 {
     DP=DS-1;
     RP=RS-1;
 }
 
-
+// ?вывод ошибки стеков? (1- пуст\2- переполнен)
 void stack_error(int n)
 {
     switch(n)
@@ -281,6 +281,7 @@ void stack_error(int n)
 }
 
 
+// положить слово в стек IP 
 void ip_push(Word *w, Word** list)
 {
     if(IP >= list+BUFF_LEN){stack_error(2);}
@@ -320,7 +321,7 @@ CELL rs_pop()
     return *(RP+1); 
 }
 
-
+//обнулить стек данных
 CELL ds_top()
 {
     if(DP <= DS-1){stack_error(1);}
@@ -334,72 +335,72 @@ CELL rs_top()
     return *RP;
 }
 
-
+//  положить цыфру в стек данных 
 void lit()
 {
     IP++;
     ds_push((CELL)*IP);
-    PRINT("[DEBUG]数%ld压入数据栈\n", (CELL)*IP)
+    PRINT("[DEBUG] number % ld data stack\n", (CELL)*IP) // Количество % ld в стек данных
 }
 
-
+// вывести  число из стека данных
 void popds()
 {
     printf("%ld\n", ds_pop());
 }
 
-
+// выход из программы
 void bye()
 {
     exit(1);
 }
 
-
+// возврат из подпрограммы
 void ret()
 {
     IP=(Word**)(rs_pop());
-    PRINT("[DEBUG]从子例程返回\n")
+    PRINT("[DEBUG]ret \n") // возврат из подпрограммы
 }
 
-
+// грубина стека данных
 void depth()
 {
     ds_push((CELL)(DP-DS+1));
 }
 
-
+// сложение
 void add()
 {
     ds_push(ds_pop() + ds_pop());
 }
 
-
+// вычитание
 void sub()
 {
     CELL d = ds_pop();
     ds_push(ds_pop() - d);
 }
 
-
+// умножение
 void mul()
 {
     ds_push(ds_pop() * ds_pop());
 }
 
-
+// деление
 void divv()
 {
     CELL d = ds_pop();
     ds_push(ds_pop() / d);
 }
 
-
+// удаление
 void drop()
 {
     ds_pop();
 }
 
-
+// показать стек данных
 void showds()
 {
     printf("<%ld> ", (CELL)(DP-DS+1));
@@ -432,21 +433,21 @@ void roll()
     ds_push(dk);
 }
 
-
-void invar()
+// запомнить переменную ( ! )
+void invar() 
 {
     Word *p = (Word *)(ds_pop());
     p->wplist = (Word **)ds_pop();
 }
 
-
+// получить переменную ( @ )
 void outvar() 
 {
     Word *p = (Word *)(ds_pop());
     ds_push((CELL)(p->wplist));
 }
 
-
+// ( = )
 void equal()
 {
     if(ds_pop() == ds_pop())
@@ -459,7 +460,7 @@ void equal()
     }
 }
 
-
+// <>
 void noequal()
 {
     if(ds_pop() != ds_pop())
@@ -500,7 +501,7 @@ void lessthan()
     }
 }
 
-
+// ?branch
 void if_branch()
 {
     if(ds_pop() == 0)
@@ -613,7 +614,7 @@ void compile_wplist()
     }
     else
     {
-        PRINT("[DEBUG]编译核心词 %s\n", word_p->name)
+        PRINT("[DEBUG]compiling_word%s\n", word_p->name) // 编译核心词  Компиляция основных слов
         ip_push((Word *)word_p, forth_dict->wplist_tmp);
     }
     rs_push((CELL)IP);
@@ -628,7 +629,7 @@ void compile_s()
     Word **IP_over = (Word **)rs_pop();
     IP = (Word **)rs_pop();
     CELL num = ds_pop();
-    PRINT("[DEBUG]编译栈顶数 %ld\n", num)
+    PRINT("[DEBUG]number_data_stack %ld\n", num) // 编译栈顶数 Число вершин стека компиляции
     ip_push((Word *)num, forth_dict->wplist_tmp);
     rs_push((CELL)IP);
     rs_push((CELL)IP_over);
@@ -674,9 +675,9 @@ void endcolon()
     int n = (CELL)IP - (CELL)IP_head;
     does(forth_dict->head, IP_head, n);
     
-    //DEBUG模式下打印出IP指针列表
+    //DEBUG模式下打印出IP指针列表 Распечатайте список указателей IP в режиме
     if(DEBUG) {
-        printf("[DEBUG]IP指针列表> ");
+        printf("[DEBUG]IP_list>  "); // 指针列表 Список указателей>
         Word **p=IP_head;
         for (;p<IP ;p++ )
         {
@@ -735,7 +736,7 @@ void _loop()
     ip_push((Word*)(IP - do_p + 1), IP_head); 
 }
 
-
+// ? показать слово?
 void see()
 {
     current_text = parse_word();
@@ -746,7 +747,7 @@ void see()
         printf("%s :\n\tCan't find!\n", current_text);
     }
     else
-    {   //反编译wplist，得出扩展词的字符串定义
+    {   //反编译wplist，得出扩展词的字符串定义   Декомпилируйте wplist, чтобы получить определение строки расширенного слова
         printf("%s :\n\t", current_text);
         if(word_p->code_p == colon_code)
         {
@@ -783,7 +784,7 @@ void see()
 void forget()
 {
     current_text = parse_word();
-    dict_rem_after(forth_dict, current_text); //删除当前扩展词以及词典中该词之后定义的所有扩展词
+    dict_rem_after(forth_dict, current_text); //删除当前扩展词以及词典中该词之后定义的所有扩展词 Удаляет текущее расширенное Слово и все расширенные слова, определенные после этого слова в словаре
 }
 
 
@@ -820,9 +821,9 @@ void interpret()
        
     while (*(current_text = parse_word()) != '\0')
     {
-        if(!strcmp(".\"",current_text))  //如果是." str " 则立即编译其中的字符串str
+        if(!strcmp(".\"",current_text))  //如果是." str " 则立即编译其中的字符串str  Если да."str" немедленно компилирует строку, в которой str
         {
-            PRINT("[DEBUG]编译字符串\n")
+            PRINT("[DEBUG] string \n") // 编译字符串 Строка компиляции
 
             char tempstr[BUFF_LEN]; 
             while(*text_p != '\"')
@@ -834,7 +835,7 @@ void interpret()
             }
             text_p++;
         }
-        else if(!strcmp("(",current_text))  //注释模式
+        else if(!strcmp("(",current_text))  //注释模式 Режим аннотации
         {
 
             while(*text_p != ')')
@@ -845,7 +846,7 @@ void interpret()
         }
         else if(!find(forth_dict, current_text))
         {
-            printf("[%s]?\n",current_text);
+            printf("word [%s] not found! \n",current_text);
             empty_stack();
             IP=IP_head;
             return;
@@ -854,10 +855,10 @@ void interpret()
 }
 
 
-//从外部文件读取Forth代码
+// Чтение кода Forth из внешнего файла
 int load_file(char *file_path)
 {
-    FILE *fp; //文件指针
+    FILE *fp; //文件指针 Указатель на файл
     char c;
     int i = 0;
     int colon_flag = FALSE;
@@ -893,7 +894,7 @@ int load_file(char *file_path)
 }
 
 
-//主程序入口
+// Главный вход программы
 int main(int argc, char *argv[]) 
 {
     empty_stack();
@@ -901,55 +902,55 @@ int main(int argc, char *argv[])
     IP = IP_head;
     forth_dict= dict_init();
     
-    //初始化词典
-    dict_ins_next(forth_dict, def_core("(lit)",lit));
+    //Инициализация словаря
+    dict_ins_next(forth_dict, def_core("(LIT)",lit));
     dict_ins_next(forth_dict, def_core(".",popds));
-    dict_ins_next(forth_dict, def_core("bye",bye));
-    dict_ins_next(forth_dict, def_core("ret",ret));
-    dict_ins_next(forth_dict, def_core("depth",depth));
+    dict_ins_next(forth_dict, def_core("BYE",bye));
+    dict_ins_next(forth_dict, def_core("RET",ret));
+    dict_ins_next(forth_dict, def_core("DEPTH",depth));
     dict_ins_next(forth_dict, def_core("+",add));
     dict_ins_next(forth_dict, def_core("-",sub));
     dict_ins_next(forth_dict, def_core("*",mul));
     dict_ins_next(forth_dict, def_core("/",divv));
-    dict_ins_next(forth_dict, def_core("drop",drop));
-    dict_ins_next(forth_dict, def_core(".s",showds));
-    dict_ins_next(forth_dict, def_core("pick",pick));
-    dict_ins_next(forth_dict, def_core("roll",roll));
+    dict_ins_next(forth_dict, def_core("DROP",drop));
+    dict_ins_next(forth_dict, def_core(".S",showds));
+    dict_ins_next(forth_dict, def_core("PICK",pick));
+    dict_ins_next(forth_dict, def_core("ROLL",roll));
     dict_ins_next(forth_dict, def_core("!", invar));
     dict_ins_next(forth_dict, def_core("@", outvar));
     dict_ins_next(forth_dict, def_core("=",equal));
     dict_ins_next(forth_dict, def_core("<>",noequal));
     dict_ins_next(forth_dict, def_core(">",morethan));
     dict_ins_next(forth_dict, def_core("<",lessthan));
-    dict_ins_next(forth_dict, def_core("?branch",if_branch));
-    dict_ins_next(forth_dict, def_core("branch",branch));
-    dict_ins_next(forth_dict, def_core("(do)",doo));
-    dict_ins_next(forth_dict, def_core("(loop)",loopp));
-    dict_ins_next(forth_dict, def_core(">r",tor));
-    dict_ins_next(forth_dict, def_core("r>",rto));
-    dict_ins_next(forth_dict, def_core("r@",rat));
-    dict_ins_next(forth_dict, def_core("emit", emit));
-    dict_ins_next(forth_dict, def_core("words",words));
-    dict_ins_next(forth_dict, def_core("immediate",immediate));
-    dict_ins_next(forth_dict, def_core("compile", compile_wplist)); 
+    dict_ins_next(forth_dict, def_core("?BRANCH",if_branch));
+    dict_ins_next(forth_dict, def_core("BRANCH",branch));
+    dict_ins_next(forth_dict, def_core("(DO)",doo));
+    dict_ins_next(forth_dict, def_core("(LOOP)",loopp));
+    dict_ins_next(forth_dict, def_core(">R",tor));
+    dict_ins_next(forth_dict, def_core("R>",rto));
+    dict_ins_next(forth_dict, def_core("R@",rat));
+    dict_ins_next(forth_dict, def_core("EMIT", emit));
+    dict_ins_next(forth_dict, def_core("WORDS",words));
+    dict_ins_next(forth_dict, def_core("IMMEDIATE",immediate));
+    dict_ins_next(forth_dict, def_core("COMPILE", compile_wplist)); 
     dict_ins_next(forth_dict, def_core(",", compile_s));
     dict_ins_next(forth_dict, def_core("'", pushds_cfa));
     
     dict_ins_next(forth_dict, def_core("[",in_interpret)); immediate();
     dict_ins_next(forth_dict, def_core("]",out_interpret)); immediate();
-    dict_ins_next(forth_dict, def_core("myself", myself)); immediate();
+    dict_ins_next(forth_dict, def_core("MYSELF", myself)); immediate();
     dict_ins_next(forth_dict, def_core(":",defcolon)); immediate();
     dict_ins_next(forth_dict, def_core(";",endcolon)); immediate();
-    dict_ins_next(forth_dict, def_core("if",_if)); immediate();
-    dict_ins_next(forth_dict, def_core("else",_else)); immediate();
-    dict_ins_next(forth_dict, def_core("then",_then)); immediate();
-    dict_ins_next(forth_dict, def_core("do",_do)); immediate();
-    dict_ins_next(forth_dict, def_core("loop",_loop)); immediate();
-    dict_ins_next(forth_dict, def_core("see",see)); immediate();
-    dict_ins_next(forth_dict, def_core("forget",forget)); immediate();
-    dict_ins_next(forth_dict, def_core("variable",var)); immediate();
-    dict_ins_next(forth_dict, def_core("constant",cons)); immediate();
-    dict_ins_next(forth_dict, def_core("load",load)); immediate();
+    dict_ins_next(forth_dict, def_core("IF",_if)); immediate();
+    dict_ins_next(forth_dict, def_core("ELSE",_else)); immediate();
+    dict_ins_next(forth_dict, def_core("THEN",_then)); immediate();
+    dict_ins_next(forth_dict, def_core("DO",_do)); immediate();
+    dict_ins_next(forth_dict, def_core("LOOP",_loop)); immediate();
+    dict_ins_next(forth_dict, def_core("SEE",see)); immediate();
+    dict_ins_next(forth_dict, def_core("FORGET",forget)); immediate();
+    dict_ins_next(forth_dict, def_core("VARIABLE",var)); immediate();
+    dict_ins_next(forth_dict, def_core("CONSTANT",cons)); immediate();
+    dict_ins_next(forth_dict, def_core("LOAD",load)); immediate();
     
     
     for(; argc > 1; argc--)

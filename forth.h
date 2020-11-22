@@ -1,13 +1,14 @@
-#define     CELL        long  //定义数据类型，在32位与64位系统中与指针类型的宽度相同
-#define     STACK_LEN   1024  //定义栈的深度
-#define     BUFF_LEN    1024  //缓冲区长度
+
+#define     CELL        long  // Определить тип данных с той же шириной, что и тип указателя в 32-битных и 64-битных системах
+#define     STACK_LEN   1024  //Определение глубины стека
+#define     BUFF_LEN    1024  //Длина буфера
 #define     TRUE        1
 #define     FALSE       0
-#define     EXPLAIN     0     //解释模式
-#define     COMPILE     1     //编译模式
-#define     REVEAL_WORD 0     //标记为显示词
-#define     IMMD_WORD   1     //标记为立即词
-#define     HIDE_WORD   2     //标记为隐藏词
+#define     EXPLAIN     0     //Режим интерпретации
+#define     COMPILE     1     //Режим компиляции
+#define     REVEAL_WORD 0     //Пометить как отображаемое слово
+#define     IMMD_WORD   1     //Отметить как немедленное слово
+#define     HIDE_WORD   2     //Пометить как скрытое слово
 
 #define DEBUG 0
 #if DEBUG
@@ -17,71 +18,71 @@
 #endif
 
 
-//代码域函数指针
+//Указатель функции кодового домена
 typedef void(*fn_p)();  
 
 
-//用结构体定义Forth的词结构，利用链表实现词典
+//Определение структуры слова Forth со структурой, реализация словаря с использованием связанного списка
 typedef struct Word
 {
-    struct Word *link;     //Forth词的链接域
-    CELL flag;             //Forth标记数，用来识别立即词、隐藏词
-    char *name;            //Forth词的名字域
-    fn_p code_p;           //Forth词的代码域
-    struct Word **wplist;  //Forth词的参数域
+    struct Word *link;     //Forth Поле ссылки для слова
+    CELL flag;             //Forth Количество тегов для идентификации немедленных слов, скрытых слов
+    char *name;            //Forth Доменное имя слова
+    fn_p code_p;           //Forth Кодовое поле слова
+    struct Word **wplist;  //Forth Поле параметров слова
 } Word;
 
 
-//定义字典结构
+//Определение структуры словаря
 typedef struct Dict
 {
-    CELL size;               //Forth词典中词的数量
-    Word *head;              //Forth词典链表最后一个词的地址
-    Word *wplist_tmp[BUFF_LEN];//保存编译模式正在定义的扩展词参数域，临时用
+    CELL size;               //Forth Количество слов в словаре
+    Word *head;              //Forth Адрес последнего слова в списке словарей
+    Word *wplist_tmp[BUFF_LEN];// Сохраняет поле параметра расширенного слова, определяемое режимом компиляции, временно
 } Dict;
 
 
-//Forth系统运行时的核心指针
-CELL state;                  //Forth状态变量
-char forth_text[BUFF_LEN];   //Forth代码文本缓冲区
-char *current_text;          //当前Forth词的词首指针
-char *text_p;                //Forth代码文本指针
-Dict *forth_dict;            //Forth词典指针
-CELL DS[STACK_LEN];          //参数栈
-CELL RS[STACK_LEN];          //返回栈
-CELL *DP, *RP;               //栈指针
-Word *IP_list[BUFF_LEN];     //解释模式指令列表，长度为BUFF_LEN  
-Word **IP;                   //指令列表指针(指针的指针)
-Word **IP_head;              //IPlist选择指针，根据状态变量指向不同的指令列表
+//Forth Указатель ядра во время работы системы
+CELL state;                  //Forth Переменные состояния
+char forth_text[BUFF_LEN];   //Forth Буфер текста кода
+char *current_text;          //Forth Указатель на начало текущего слова
+char *text_p;                //Forth Указатель текста кода
+Dict *forth_dict;            //Forth Указатель словаря
+CELL DS[STACK_LEN];          // Стек параметров
+CELL RS[STACK_LEN];          //  Возврат к стеку
+CELL *DP, *RP;               // Указатель стека
+Word *IP_list[BUFF_LEN];     // Список инструкций режима интерпретации, длина BUFF_LEN  
+Word **IP;                   // Указатель списка инструкций (указатель на указатель) // ??стек для списка слов??. 
+Word **IP_head;              //IPlist Выберите указатель, указывающий на другой список инструкций в зависимости от переменной состояния
 
-//文本解析
-int check_blank(char c);  //判断是否为空白字符
-char *parse_word();  //返回输入流中当前的forth词，并更新text_p指针
+// Разбор текста
+int check_blank(char c);  // Определяет, является ли символ пробела
+char *parse_word();  // Возвращает текущее слово forth во входном потоке и обновляет указатель text_p
 
-//Forth词的构建函数
-Word *create(char *name, fn_p  fp); //创建Forth词的名字域
-void does(Word *c, Word **list, int n); //创建Forth词中的参数域
-Word *def_core(char *name, fn_p  fp); //创建一个Forth核心词
-void colon_code();  //扩展词的代码域
-void cons_code();   //常数词的代码域
-void var_code();    //变量词的代码域
+//Forth Функции построения слов
+Word *create(char *name, fn_p  fp); //Создать домен имени Forth Word
+void does(Word *c, Word **list, int n); // Forth Построение параметрических полей в слове  
+Word *def_core(char *name, fn_p  fp); // Forth Создание основного слова
+void colon_code();  // Кодовое поле расширенного слова
+void cons_code();   // Кодовые поля постоянных слов
+void var_code();    // Кодовые поля переменных слов
 
-//Forth词典的操作函数
+//Forth Операционные функции словаря
 Dict *dict_init();
 int dict_ins_next(Dict *dict, Word *word);
 Word *dict_search_name(Dict *dict, char *name);
 void dict_destroy_word(Word *word);
 int dict_rem_after(Dict *dict, char *name);
 
-//Forth指令列表操作函数
-void explain(); //IP列表执行
-int is_num(char *s); //判断字符串是否为数字
-int find(Dict *dict, char *name); //根据词名，去执行相应的IP列表操作
+//Forth Функция действия списка инструкций
+void explain(); //IP Выполнение списка
+int is_num(char *s); // Определяет, является ли строка числовой
+int find(Dict *dict, char *name); // В зависимости от имени слова перейдите к соответствующему списку IP-адресов
 
-//Forth栈操作函数
+//Forth Функция действия стека
 void empty_stack();
 void stack_error(int n);
-void ip_push(Word *w, Word** list);  //IP栈PUSH
+void ip_push(Word *w, Word** list);  //IP хранилище PUSH
 void ds_push(CELL n);
 void rs_push(CELL n);
 CELL ds_pop();
@@ -89,7 +90,7 @@ CELL rs_pop();
 CELL ds_top();
 CELL rs_top();
 
-//Forth核心词
+//Forth Основные слова
 void lit();      // (lit)
 void popds();    // .
 void bye();      // bye
@@ -129,11 +130,11 @@ void emit();       // emit
 void words();      // words
 
 void immediate();  // immediate
-void compile();    // compile 编译后面一个词的运行时代码
-void compile_s();  // , 编译栈顶数到扩展词定义中
-void pushds_cfa(); // ' 将后面一个词的执行地址压入数据栈
+void compile();    // compile  Скомпилируйте код времени выполнения, который следует за словом
+void compile_s();  // ,  Число вершин стека компиляции в определении расширенного слова
+void pushds_cfa(); // ' Нажатие адреса выполнения последнего слова в стек данных
 
-//Forth核心词中的立即词
+//Forth Непосредственные слова в ядре
 void in_interpret(); // [
 void out_interpret();// ]
 void myself();     // myself
@@ -151,6 +152,6 @@ void cons();       // constant
 void load();       // load
 
 
-//Forth解释器部分
+//Forth Часть интерпретатора
 void interpret();
 int load_file(char *file_path);
