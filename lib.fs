@@ -1,43 +1,41 @@
 ( Forth System Words Begin )
-: cr 10 emit ;
-: dup 1 pick ;
-: swap 2 roll ;
-: over 2 pick ;
-: rot 3 roll ;
-: -rot 3 roll 3 roll ;
-: 2dup over over ;
-: 2drop drop drop ;
-: 2swap 4 roll 4 roll ;
-: 2over 4 pick 4 pick ;
-: 2rot 6 roll 6 roll ;
-: nip swap drop ;
-: tuck swap over ;
-: 3dup 3 pick 3 pick 3 pick ;
+: CR 10 EMIT ;
+: DUP 1 PICK ;
+: SWAP 2 ROLL ;
+: OVER 2 PICK ;
+: ROT 3 ROLL ;
+: -ROT 3 ROLL 3 ROLL ;
+: 2DUP OVER OVER ;
+: 2DROP DROP DROP ;
+: 2SWAP 4 ROLL 4 ROLL ;
+: 2OWER 4 PICK 4 PICK ;
+: 2ROT 6 ROLL 6 ROLL ;
+: NIP SWAP DROP;
+: TUCK SWAP OVER ;
 
-: mod ( n1 n2 -- mod ) 2dup / * - ;
-: /mod ( n1 n2 -- mod div ) 2dup / >r mod r> ;
-: negate ( n -- -n ) -1 * ;
-: abs dup 0 < if negate then ;
+: MOD ( n1 n2 -- mod ) 2DUP / * - ;
+: /MOD ( n1 n2 -- mod div ) 2DUP / >r MOD r> ;
+: NEGATE ( n -- -n ) -1 * ;
+: ABS DUP 0 < IF NEGATE THEN ;
 : 1+ 1 + ;
 : 1- 1 - ;
 : 2+ 2 + ;
 : 2- 2 - ;
 : 2* 2 * ;
 : 2/ 2 / ;
-: max 2dup < if swap then drop ;
-: min 2dup > if swap then drop ;
-: max2 ( n1 n2 n3 -- max1 max2 ) 2dup max >r min max r> ;
+: MAX 2DUP < IF SWAP THEN DROP ;
+: MIN 2DUP > IF SWAP THEN DROP ;
 
 : 0= 0 = ;
 : 0<> 0 <> ;
 : 0> 0 > ;
 : 0< 0 < ;
-: true -1 ;
-: false 0 ;
-: ?dup dup 0<> if dup then ;
+: TRUE -1 ;
+: FALSE 0 ;
+: ?DUP DUP 0<> IF DUP THEN ;
 
-: space 32 emit ;
+: SPACE 32 EMIT ;
 
-: [compile] ' , ; immediate
-: literal ( n -- ) compile (lit) , ; immediate
-( Forth System Words End ) words cr
+: [COMPILE] ' , ; IMMEDIATE
+: LITERAL ( n -- ) CEMPILE (LIT) , ; IMMEDIATE
+( Forth System Words End ) WORDS CR
